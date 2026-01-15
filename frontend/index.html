@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Presentes - 15 Anos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-icon"><i class="fas fa-gift"></i></div>
+            <div class="header-text">
+                <h1 class="header-title">15 anos da <span class="name-leticia">Letícia</span></h1>
+                <h2 class="header-subtitle">Lista de Presentes</h2>
+                <p>Escolha um presente especial para celebrar este momento único</p>
+            </div>
+        </div>
+        <button class="btn-admin" id="btnAdmin" aria-label="Acessar área administrativa"><i class="fas fa-cog"></i></button>
+    </header>
+
+    <!-- Painel de Métricas -->
+    <section class="metrics-panel">
+        <div class="metric-card">
+            <div class="metric-value" id="totalGifts">0</div>
+            <div class="metric-label">Total de Presentes</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value" id="availableGifts">0</div>
+            <div class="metric-label">Disponíveis</div>
+        </div>
+        <div class="metric-card">
+            <div class="metric-value" id="reservedGifts">0</div>
+            <div class="metric-label">Escolhidos</div>
+        </div>
+    </section>
+
+    <!-- Lista de Presentes -->
+    <main class="main-content">
+        <!-- Filtro de Busca -->
+        <div class="gifts-filter-container">
+            <div class="gifts-filter">
+                <i class="fas fa-search"></i>
+                <input 
+                    type="text" 
+                    id="giftSearchInput" 
+                    placeholder="Buscar presentes por nome, categoria ou descrição..."
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+        
+        <div class="gifts-container" id="giftsContainer">
+            <!-- Cards de presentes serão inseridos aqui via JavaScript -->
+            <div class="loading" id="loading">Carregando presentes...</div>
+        </div>
+        
+        <!-- Paginação -->
+        <div class="pagination-container" id="paginationContainer">
+            <!-- Bullets de paginação serão inseridos aqui via JavaScript -->
+        </div>
+        
+        <!-- Seção PIX -->
+        <section class="pix-section">
+            <div class="pix-container">
+                <h2 class="pix-title">Presente Surpresa</h2>
+                <div class="pix-content">
+                    <div class="pix-text">
+                        <p>Se você quiser me fazer uma surpresa com um presente via <strong>PIX</strong>, aqui está o <strong>QR Code</strong>.</p>
+                    </div>
+                    <div class="pix-qrcode">
+                        <img src="images/qrcode-pix.png" alt="QR Code PIX" id="pixQrCode">
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal - Escolher Presente -->
+    <div class="modal" id="modalReserve">
+        <div class="modal-content">
+            <button class="modal-close" id="closeReserveModal" aria-label="Fechar modal">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" id="reserveModalIcon"><i class="fas fa-gift"></i></div>
+                <h2 id="reserveModalTitle">Escolher Presente</h2>
+            </div>
+            <form id="reserveForm" class="modal-form">
+                <div class="form-group">
+                    <label for="guestName">Nome Completo *</label>
+                    <input 
+                        type="text" 
+                        id="guestName" 
+                        name="guestName" 
+                        required 
+                        placeholder="Digite seu nome completo"
+                        autocomplete="name"
+                    >
+                    <span class="form-error" id="guestNameError"></span>
+                </div>
+                <div class="form-warning">
+                    <p>⚠️ Ao confirmar, este presente será bloqueado para outros convidados.</p>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelReserve">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="confirmReserve">Confirmar Escolha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal - Sucesso -->
+    <div class="modal" id="modalSuccess">
+        <div class="modal-content modal-success">
+            <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+            <h2>Obrigada!</h2>
+            <p class="success-message">Sua escolha foi confirmada com sucesso.</p>
+            <div class="success-details">
+                <p><strong>Presente:</strong> <span id="successGiftName"></span></p>
+                <p><strong>Reservado por:</strong> <span id="successGuestName"></span></p>
+            </div>
+            <button class="btn btn-primary" id="closeSuccessModal">Fechar</button>
+        </div>
+    </div>
+
+    <!-- Modal - Login Administrativo -->
+    <div class="modal" id="modalLogin">
+        <div class="modal-content">
+            <button class="modal-close" id="closeLoginModal" aria-label="Fechar modal">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fas fa-lock"></i></div>
+                <h2>Acesso Administrativo</h2>
+            </div>
+            <form id="loginForm" class="modal-form">
+                <div class="form-group">
+                    <label for="adminPassword">Senha</label>
+                    <div class="password-input-wrapper">
+                        <input 
+                            type="password" 
+                            id="adminPassword" 
+                            name="adminPassword" 
+                            required 
+                            placeholder="Digite a senha administrativa"
+                            autocomplete="current-password"
+                        >
+                        <button type="button" class="password-toggle" id="togglePassword" aria-label="Mostrar senha">
+                            <i class="fas fa-eye" id="passwordToggleIcon"></i>
+                        </button>
+                    </div>
+                    <span class="form-error" id="loginError"></span>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelLogin">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Entrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal - Gerenciar Presentes (Admin) -->
+    <div class="modal modal-large" id="modalAdmin">
+        <div class="modal-content">
+            <button class="modal-close" id="closeAdminModal" aria-label="Fechar modal">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fas fa-cog"></i></div>
+                <h2>Gerenciar Presentes</h2>
+            </div>
+            <div class="admin-actions">
+                <button class="btn btn-primary" id="btnAddGift">+ Adicionar Presente</button>
+            </div>
+            <div class="admin-gifts-list" id="adminGiftsList">
+                <!-- Lista de presentes administrativa será inserida aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Confirmar Ação -->
+    <div class="modal" id="modalConfirm">
+        <div class="modal-content">
+            <button class="modal-close" id="closeConfirmModal" aria-label="Fechar modal">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" id="confirmModalIcon"><i class="fas fa-exclamation-triangle"></i></div>
+                <h2 id="confirmModalTitle">Confirmar Ação</h2>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage">Tem certeza que deseja realizar esta ação?</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="cancelConfirm">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmAction">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Input de Nome -->
+    <div class="modal" id="modalInputName">
+        <div class="modal-content">
+            <button class="modal-close" id="closeInputNameModal" aria-label="Fechar modal">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fas fa-user"></i></div>
+                <h2 id="inputNameModalTitle">Informar Nome</h2>
+            </div>
+            <form id="inputNameForm" class="modal-form">
+                <div class="form-group">
+                    <label for="inputNameField" id="inputNameLabel">Nome</label>
+                    <input 
+                        type="text" 
+                        id="inputNameField" 
+                        name="inputName" 
+                        required
+                        placeholder="Digite o nome"
+                        autocomplete="name"
+                    >
+                    <span class="form-error" id="inputNameError"></span>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelInputName">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="submitInputName">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal - Alerta/Erro -->
+    <div class="modal" id="modalAlert">
+        <div class="modal-content">
+            <button class="modal-close" id="closeAlertModal" aria-label="Fechar modal">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" id="alertModalIcon"><i class="fas fa-info-circle"></i></div>
+                <h2 id="alertModalTitle">Atenção</h2>
+            </div>
+            <div class="modal-body">
+                <p id="alertModalMessage">Mensagem de alerta</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-primary" id="closeAlert">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Editar Nome da Pessoa que Reservou -->
+    <div class="modal" id="modalEditReservedBy">
+        <div class="modal-content">
+            <button class="modal-close" id="closeEditReservedByModal" aria-label="Fechar modal">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon"><i class="fas fa-user-edit"></i></div>
+                <h2>Editar Nome da Pessoa</h2>
+            </div>
+            <form id="editReservedByForm" class="modal-form">
+                <input type="hidden" id="editReservedByGiftId" name="giftId">
+                <div class="form-group">
+                    <label for="reservedByName">Nome da Pessoa que Reservou</label>
+                    <input 
+                        type="text" 
+                        id="reservedByName" 
+                        name="reservedByName" 
+                        placeholder="Digite o nome ou deixe vazio para remover"
+                        autocomplete="name"
+                    >
+                    <small class="form-help">Deixe vazio para remover o nome</small>
+                    <span class="form-error" id="reservedByNameError"></span>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelEditReservedBy">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal - Adicionar/Editar Presente -->
+    <div class="modal" id="modalGiftForm">
+        <div class="modal-content">
+            <button class="modal-close" id="closeGiftFormModal" aria-label="Fechar modal">&times;</button>
+            <div class="modal-header">
+                <div class="modal-icon" id="giftFormIcon"><i class="fas fa-gift"></i></div>
+                <h2 id="giftFormTitle">Adicionar Presente</h2>
+            </div>
+            <form id="giftForm" class="modal-form">
+                <input type="hidden" id="giftId" name="giftId">
+                <div class="form-group">
+                    <label for="giftName">Nome do Presente *</label>
+                    <input 
+                        type="text" 
+                        id="giftName" 
+                        name="giftName" 
+                        required 
+                        placeholder="Ex: Perfume Chanel"
+                    >
+                    <span class="form-error" id="giftNameError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="giftCategory">Categoria *</label>
+                    <input 
+                        type="text" 
+                        id="giftCategory" 
+                        name="giftCategory" 
+                        required 
+                        placeholder="Ex: Beleza, Roupas, Acessórios..."
+                        maxlength="50"
+                    >
+                    <small class="form-help">Digite a categoria do presente</small>
+                    <span class="form-error" id="giftCategoryError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="giftDescription">Descrição *</label>
+                    <textarea 
+                        id="giftDescription" 
+                        name="giftDescription" 
+                        required 
+                        placeholder="Descreva o presente..."
+                        rows="3"
+                    ></textarea>
+                    <span class="form-error" id="giftDescriptionError"></span>
+                </div>
+                <div class="form-group">
+                    <label for="giftProductLink">Link do Produto (opcional)</label>
+                    <input 
+                        type="url" 
+                        id="giftProductLink" 
+                        name="giftProductLink" 
+                        placeholder="https://..."
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="giftImageFile">Imagem do Presente (opcional)</label>
+                    <input 
+                        type="file" 
+                        id="giftImageFile" 
+                        name="giftImageFile" 
+                        accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                    >
+                    <small class="form-help">Formatos aceitos: JPEG, PNG, GIF, WebP. Tamanho máximo: 5MB</small>
+                    <div id="imagePreview" class="image-preview" style="display: none; margin-top: 10px;">
+                        <img id="imagePreviewImg" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px;">
+                        <button type="button" id="removeImagePreview" class="btn-remove-image" style="margin-left: 10px;"><i class="fas fa-times"></i> Remover</button>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelGiftForm">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="submitGiftForm">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

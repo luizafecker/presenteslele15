@@ -1,0 +1,41 @@
+# Configurações de atributos Git para garantir tratamento correto de arquivos
+
+# Arquivos de texto devem usar LF (Unix) em vez de CRLF (Windows)
+* text=auto eol=lf
+
+# Arquivos específicos que devem manter CRLF (Windows)
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Arquivos binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+
+# Arquivos de código
+*.js text
+*.json text
+*.html text
+*.css text
+*.sql text
+*.md text
+*.txt text
+*.env text
+*.gitignore text
+*.gitattributes text
+
+# Arquivos de configuração
+*.config text
+*.conf text
+*.yml text
+*.yaml text
+
+# Garantir que package-lock.json seja tratado como texto
+package-lock.json text
