@@ -1,15 +1,46 @@
 const mysql = require('mysql2/promise');
-require('dotenv').config();
+
+// Carrega .env APENAS em desenvolvimento (se arquivo existir)
+// Em produção na Hostinger, as variáveis vêm do painel, não do .env
+if (process.env.NODE_ENV !== 'production') {
+    try {
+        require('dotenv').config();
+    } catch (error) {
+        // Ignora se dotenv não estiver disponível
+    }
+}
+
+// Valida variáveis de ambiente OBRIGATÓRIAS
+const requiredEnvVars = {
+    DB_HOST: process.env.DB_HOST,
+    DB_USER: process.env.DB_USER,
+    DB_PASSWORD: process.env.DB_PASSWORD,
+    DB_NAME: process.env.DB_NAME
+};
+
+// Verifica se todas as variáveis obrigatórias estão presentes
+const missingVars = Object.keys(requiredEnvVars).filter(key => !requiredEnvVars[key]);
+
+if (missingVars.length > 0) {
+    console.error('❌ ERRO CRÍTICO: Variáveis de ambiente obrigatórias não encontradas:');
+    missingVars.forEach(varName => {
+        console.error(`   - ${varName}`);
+    });
+    console.error('\n💡 Configure estas variáveis no painel da Hostinger:');
+    console.error('   DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT (opcional)');
+    throw new Error(`Variáveis de ambiente obrigatórias não configuradas: ${missingVars.join(', ')}`);
+}
 
 // Configuração da conexão com o banco de dados
+// SEM FALLBACKS - usa APENAS variáveis de ambiente
 const dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
+    host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT) || 3306, // Porta MySQL (3306 é padrão)
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'lista_presentes',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     waitForConnections: true,
-    connectionLimit: process.env.DB_CONNECTION_LIMIT || 10,
+    connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT) || 10,
     queueLimit: 0,
     enableKeepAlive: true,
     keepAliveInitialDelay: 0,
