@@ -6,51 +6,74 @@ class Gift {
      * Query compatível com schema básico e completo
      */
     static async findAll() {
-        // Primeiro tenta query completa (schema padrão)
-        const fullSql = `
-            SELECT 
-                id,
-                name,
-                category,
-                description,
-                product_link,
-                image_url,
-                status,
-                reserved_by,
-                reserved_at,
-                created_at
-            FROM gifts
-            ORDER BY created_at DESC
-        `;
-        
         try {
-            return await db.query(fullSql);
+            // Tenta query completa (schema padrão)
+            const fullSql = `
+                SELECT 
+                    id,
+                    name,
+                    category,
+                    description,
+                    product_link,
+                    image_url,
+                    status,
+                    reserved_by,
+                    reserved_at,
+                    created_at
+                FROM gifts
+                ORDER BY created_at DESC
+            `;
+            
+            const results = await db.query(fullSql);
+            console.log(`✅ Query executada com sucesso. Retornando ${results.length} presentes.`);
+            return results;
         } catch (error) {
+            // Log detalhado do erro
+            console.error('❌ Erro em Gift.findAll():', {
+                message: error.message,
+                code: error.code,
+                sqlState: error.sqlState,
+                sqlMessage: error.sqlMessage
+            });
+            
             // Se a query falhar por causa de colunas que não existem,
             // tenta uma query mais simples com apenas colunas essenciais
             if (error.code === 'ER_BAD_FIELD_ERROR') {
                 console.warn('⚠️ Algumas colunas não existem no banco, usando query simplificada');
-                const simpleSql = `
-                    SELECT 
-                        id,
-                        name,
-                        category,
-                        description,
-                        product_link,
-                        image_url,
-                        status
-                    FROM gifts
-                    ORDER BY id DESC
-                `;
-                const results = await db.query(simpleSql);
-                // Adiciona valores padrão para colunas que podem não existir
-                return results.map(gift => ({
-                    ...gift,
-                    reserved_by: null,
-                    reserved_at: null,
-                    created_at: null
-                }));
+                try {
+                    const simpleSql = `
+                        SELECT 
+                            id,
+                            name,
+                            category,
+                            description,
+                            product_link,
+                            image_url,
+                            status
+                        FROM gifts
+                        ORDER BY id DESC
+                    `;
+                    const results = await db.query(simpleSql);
+                    // Adiciona valores padrão para colunas que podem não existir
+                    return results.map(gift => ({
+                        ...gift,
+                        reserved_by: null,
+                        reserved_at: null,
+                        created_at: null
+                    }));
+                } catch (fallbackError) {
+                    console.error('❌ Erro também na query simplificada:', fallbackError.message);
+                    throw fallbackError;
+                }
             }
+            
+            // Se a tabela não existir, retorna array vazio em vez de erro
+            if (error.code === 'ER_NO_SUCH_TABLE') {
+                console.error('❌ Tabela "gifts" não encontrada no banco de dados!');
+                console.error('💡 Execute o arquivo database/schema.sql no phpMyAdmin da Hostinger.');
+                return [];
+            }
+            
             // Se for outro erro, propaga
             throw error;
         }

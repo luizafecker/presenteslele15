@@ -88,7 +88,7 @@ app.use('/uploads', express.static(uploadsPath, {
 
 // ==================== ROTAS ====================
 
-// Rotas da API
+// Rotas da API (devem vir ANTES do catch-all)
 app.use('/api', giftRoutes);
 app.use('/api/admin/login', loginLimiter, adminRoutes); // Rate limit no login
 app.use('/api/admin', adminRoutes);
@@ -98,9 +98,10 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// Rota catch-all para SPA - redireciona para index.html
-app.get('*', (req, res) => {
-    // Se for uma rota de API, retorna 404 JSON
+// Rota catch-all para SPA - DEVE vir DEPOIS de todas as rotas da API
+// IMPORTANTE: Usa app.use em vez de app.get para capturar todos os métodos HTTP
+app.use((req, res) => {
+    // Se for uma rota de API não encontrada, retorna 404 JSON
     if (req.path.startsWith('/api')) {
         return res.status(404).json({
             success: false,
@@ -139,15 +140,19 @@ app.use((err, req, res, next) => {
 
 async function startServer() {
     try {
-        // Valida variáveis de ambiente críticas
+        // Valida variáveis de ambiente críticas (mas não bloqueia se algumas estiverem faltando)
         const requiredEnvVars = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
         const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
         
         if (missingVars.length > 0) {
-            console.error('❌ Variáveis de ambiente obrigatórias não encontradas:');
-            missingVars.forEach(varName => console.error(`   - ${varName}`));
-            console.error('\n💡 Crie um arquivo .env na raiz do projeto com essas variáveis.');
-            process.exit(1);
+            console.warn('⚠️ Algumas variáveis de ambiente não foram encontradas:');
+            missingVars.forEach(varName => console.warn(`   - ${varName}`));
+            console.warn('💡 Usando valores padrão. Configure as variáveis no painel da Hostinger.');
+            console.warn('💡 Variáveis atuais:');
+            console.warn(`   DB_HOST: ${process.env.DB_HOST || 'localhost (padrão)'}`);
+            console.warn(`   DB_USER: ${process.env.DB_USER || 'root (padrão)'}`);
+            console.warn(`   DB_NAME: ${process.env.DB_NAME || 'lista_presentes (padrão)'}`);
+            console.warn(`   DB_PASSWORD: ${process.env.DB_PASSWORD ? '***configurada***' : 'NÃO CONFIGURADA'}`);
         }
 
         // Testa conexão com banco

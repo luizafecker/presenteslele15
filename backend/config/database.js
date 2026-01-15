@@ -32,11 +32,24 @@ const pool = mysql.createPool(dbConfig);
 async function testConnection() {
     try {
         const connection = await pool.getConnection();
+        
+        // Testa se consegue executar uma query simples
+        await connection.query('SELECT 1');
+        
         console.log('✅ Conexão com banco de dados estabelecida');
+        console.log(`   Host: ${dbConfig.host}`);
+        console.log(`   Database: ${dbConfig.database}`);
+        console.log(`   User: ${dbConfig.user}`);
+        
         connection.release();
         return true;
     } catch (error) {
-        console.error('❌ Erro ao conectar ao banco de dados:', error.message);
+        console.error('❌ Erro ao conectar ao banco de dados:');
+        console.error(`   Mensagem: ${error.message}`);
+        console.error(`   Código: ${error.code}`);
+        console.error(`   Host configurado: ${dbConfig.host}`);
+        console.error(`   Database configurado: ${dbConfig.database}`);
+        console.error(`   User configurado: ${dbConfig.user}`);
         return false;
     }
 }
