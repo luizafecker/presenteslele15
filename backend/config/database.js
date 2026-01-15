@@ -49,7 +49,15 @@ async function query(sql, params = []) {
         const [results] = await pool.execute(sql, params);
         return results;
     } catch (error) {
-        console.error('Erro na query:', error);
+        // Log detalhado do erro SQL para debug
+        console.error('❌ Erro na query SQL:', {
+            message: error.message,
+            code: error.code,
+            sqlState: error.sqlState,
+            sqlMessage: error.sqlMessage,
+            sql: sql.substring(0, 200), // Primeiros 200 caracteres da query
+            params: params
+        });
         throw error;
     }
 }

@@ -3,9 +3,11 @@ const db = require('../config/database');
 class Gift {
     /**
      * Busca todos os presentes
+     * Query compatível com schema básico e completo
      */
     static async findAll() {
-        const sql = `
+        // Primeiro tenta query completa (schema padrão)
+        const fullSql = `
             SELECT 
                 id,
                 name,
@@ -20,7 +22,38 @@ class Gift {
             FROM gifts
             ORDER BY created_at DESC
         `;
-        return await db.query(sql);
+        
+        try {
+            return await db.query(fullSql);
+        } catch (error) {
+            // Se a query falhar por causa de colunas que não existem,
+            // tenta uma query mais simples com apenas colunas essenciais
+            if (error.code === 'ER_BAD_FIELD_ERROR') {
+                console.warn('⚠️ Algumas colunas não existem no banco, usando query simplificada');
+                const simpleSql = `
+                    SELECT 
+                        id,
+                        name,
+                        category,
+                        description,
+                        product_link,
+                        image_url,
+                        status
+                    FROM gifts
+                    ORDER BY id DESC
+                `;
+                const results = await db.query(simpleSql);
+                // Adiciona valores padrão para colunas que podem não existir
+                return results.map(gift => ({
+                    ...gift,
+                    reserved_by: null,
+                    reserved_at: null,
+                    created_at: null
+                }));
+            }
+            // Se for outro erro, propaga
+            throw error;
+        }
     }
 
     /**
