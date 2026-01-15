@@ -1,9 +1,17 @@
 -- Banco de dados para Lista de Presentes - 15 Anos
 
--- Cria banco de dados (se não existir)
-CREATE DATABASE IF NOT EXISTS lista_presentes CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- ============================================
+-- IMPORTANTE: Em produção (Hostinger, etc.), o banco de dados já é criado pelo painel.
+-- NÃO execute estas linhas em produção. Elas são apenas para desenvolvimento local.
+-- ============================================
 
-USE lista_presentes;
+-- Cria banco de dados (se não existir)
+-- COMENTADO: Descomente apenas se estiver criando o banco localmente
+-- CREATE DATABASE IF NOT EXISTS lista_presentes CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Seleciona o banco de dados
+-- COMENTADO: Em produção, selecione o banco no phpMyAdmin ou cliente MySQL antes de executar
+-- USE lista_presentes;
 
 -- Tabela de presentes
 CREATE TABLE IF NOT EXISTS gifts (
