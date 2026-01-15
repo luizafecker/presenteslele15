@@ -4,16 +4,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
-
-// Carrega .env APENAS em desenvolvimento (se arquivo existir)
-// Em produção na Hostinger, as variáveis vêm do painel, não do .env
-if (process.env.NODE_ENV !== 'production') {
-    try {
-        require('dotenv').config();
-    } catch (error) {
-        // Ignora se dotenv não estiver disponível
-    }
-}
+require('dotenv').config();
 
 const db = require('./config/database');
 const giftRoutes = require('./routes/giftRoutes');

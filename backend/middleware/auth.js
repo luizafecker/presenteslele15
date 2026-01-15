@@ -1,14 +1,8 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/Admin');
 
-// Chave secreta - OBRIGATÓRIA em produção
-if (!process.env.JWT_SECRET) {
-    console.error('❌ ERRO CRÍTICO: JWT_SECRET não configurado!');
-    console.error('💡 Configure JWT_SECRET no painel da Hostinger.');
-    throw new Error('JWT_SECRET não configurado. Configure no painel da Hostinger.');
-}
-
-const JWT_SECRET = process.env.JWT_SECRET;
+// Chave secreta (em produção, usar variável de ambiente)
+const JWT_SECRET = process.env.JWT_SECRET || 'lista-presentes-secret-key-change-in-production';
 
 /**
  * Middleware de autenticação
