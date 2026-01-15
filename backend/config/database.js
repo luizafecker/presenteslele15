@@ -4,6 +4,7 @@ require('dotenv').config();
 // Configuração da conexão com o banco de dados
 const dbConfig = {
     host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT) || 3306, // Porta MySQL (3306 é padrão)
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'lista_presentes',
@@ -38,6 +39,7 @@ async function testConnection() {
         
         console.log('✅ Conexão com banco de dados estabelecida');
         console.log(`   Host: ${dbConfig.host}`);
+        console.log(`   Port: ${dbConfig.port}`);
         console.log(`   Database: ${dbConfig.database}`);
         console.log(`   User: ${dbConfig.user}`);
         
@@ -48,6 +50,7 @@ async function testConnection() {
         console.error(`   Mensagem: ${error.message}`);
         console.error(`   Código: ${error.code}`);
         console.error(`   Host configurado: ${dbConfig.host}`);
+        console.error(`   Port configurado: ${dbConfig.port}`);
         console.error(`   Database configurado: ${dbConfig.database}`);
         console.error(`   User configurado: ${dbConfig.user}`);
         return false;
